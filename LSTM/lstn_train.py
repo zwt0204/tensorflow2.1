@@ -13,7 +13,7 @@ import os
 import numpy as np
 import json
 
-os.environ['CUDA_VISIBLE_DEVICES'] = '0'
+os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 
@@ -77,7 +77,7 @@ class model_train():
     def data_process(self):
         # x_train, y_train, x_test, y_test = get_data(self.model.vocab_size)
         # 加载数据集
-        x_train, y_train = self.load_samples_test(datafiles='data.txt')
+        x_train, y_train = self.load_samples_test(datafiles='../data/train.txt')
         # word_index, reverse_word_index = word_index_word()
         # 截断和填充句子，使得等长，此处长句子保留句子后面的部分，短句子在前面填充
         x_train = keras.preprocessing.sequence.pad_sequences(x_train, maxlen=self.model.sentence_length)
@@ -106,7 +106,6 @@ class model_train():
     def predict(self, input_text):
         # Make a prediction on all the batch
         inputs = self.convert_vector(input_text, self.model.sentence_length)
-        print(inputs.shape)
         inputs = keras.layers.Reshape(inputs, [-1, 70])
         self.model.compile(
             optimizer=keras.optimizers.Adam(self.lr),
@@ -122,5 +121,5 @@ class model_train():
 
 if __name__ == '__main__':
     model = model_train()
-    # model.train()
-    model.predict('abc')
+    model.train()
+    # model.predict('abc')
