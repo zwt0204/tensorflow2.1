@@ -92,6 +92,7 @@ class DssmModel:
         self.reduce_lr = keras.callbacks.LearningRateScheduler(scheduler)
 
         if self.gpus >= 2:
+            # 数据并行
             self.model = keras.utils.multi_gpu_model(self.model, gpus=self.gpus)
         self.model.compile(loss='binary_crossentropy', optimizer=keras.optimizers.Adam(lr=0.0001), metrics=['accuracy'])
         self.model.summary()
