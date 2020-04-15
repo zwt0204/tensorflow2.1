@@ -28,6 +28,24 @@ class CosineLayer():
         return value
 
 
+class Evaluate(keras.callbacks.Callback):
+    def __init__(self):
+        self.num_passed_batchs = 0
+        self.warmup_epochs = 10
+
+    def on_batch_begin(self, batch, logs=None):
+        # params是模型自动传递给Callback的一些参数
+        if self.params['steps'] is None:
+            self.steps_per_epoch = np.ceil(1. * self.params['samples'] / self.params['batch_size'])
+        else:
+            self.steps_per_epoch = self.params['steps']
+        if self.num_passed_batchs < self.steps_per_epoch * self.warmup_epochs:
+            # 前10个epoch中，学习率线性地从零增加到0.001
+            keras.backend.set_value(self.model.optimizer.lr,
+                        0.0001 * (self.num_passed_batchs + 1) / self.steps_per_epoch / self.warmup_epochs)
+            self.num_passed_batchs += 1
+
+
 class DssmModel:
 
     def __init__(self):
@@ -70,15 +88,17 @@ class DssmModel:
                 print("lr changed to {}".format(lr * 0.9))
             return keras.backend.get_value(self.model.optimizer.lr)
 
+        # 学习率衰减
         self.reduce_lr = keras.callbacks.LearningRateScheduler(scheduler)
 
         if self.gpus >= 2:
             self.model = keras.utils.multi_gpu_model(self.model, gpus=self.gpus)
-        self.model.compile(loss='binary_crossentropy', optimizer=keras.optimizers.Adam(lr=0.001), metrics=['accuracy'])
+        self.model.compile(loss='binary_crossentropy', optimizer=keras.optimizers.Adam(lr=0.0001), metrics=['accuracy'])
         self.model.summary()
         shared_model.summary()
 
     def train(self, n_epoch, x_left, x_right, label):
+        # callbacks=[Evaluate()]
         self.model.fit([np.array(x_left), np.array(x_right)], np.array(label), batch_size=self.batch_size,
                        epochs=n_epoch)
 
