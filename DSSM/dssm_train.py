@@ -7,9 +7,9 @@
 @Software: PyCharm
 """
 from DSSM.dssm_model import DssmModel
-from tensorflow import keras
 import numpy as np
 import json
+import tensorflow as tf
 
 
 class Train:
@@ -38,16 +38,16 @@ class Train:
                 label.append(int(data['label']))
                 left.append(temp)
                 right.append(temp_1)
-        x_left = keras.preprocessing.sequence.pad_sequences(left, maxlen=self.model.max_seq_length)
-        x_right = keras.preprocessing.sequence.pad_sequences(right, maxlen=self.model.max_seq_length)
+        x_left = tf.keras.preprocessing.sequence.pad_sequences(left, maxlen=self.model.max_seq_length)
+        x_right = tf.keras.preprocessing.sequence.pad_sequences(right, maxlen=self.model.max_seq_length)
         self.model.train(n_epochs, x_left, x_right, label)
         self.model.save(self.model_path)
 
     def predict(self, input_text1, input_text2):
         input_text1 = self.convert_vector(input_text1.strip())
         input_text2 = self.convert_vector(input_text2.strip())
-        x_test1 = keras.preprocessing.sequence.pad_sequences([input_text1], maxlen=self.model.max_seq_length)
-        x_test2 = keras.preprocessing.sequence.pad_sequences([input_text2], maxlen=self.model.max_seq_length)
+        x_test1 = tf.keras.preprocessing.sequence.pad_sequences([input_text1], maxlen=self.model.max_seq_length)
+        x_test2 = tf.keras.preprocessing.sequence.pad_sequences([input_text2], maxlen=self.model.max_seq_length)
         res = self.model.predict(x_test1, x_test2, self.model_path)
         print(res)
 

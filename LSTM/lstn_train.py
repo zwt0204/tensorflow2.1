@@ -7,7 +7,6 @@
 @Software: PyCharm
 """
 from LSTM.lstm_model import RNN
-from tensorflow import keras
 import tensorflow as tf
 import os
 import numpy as np
@@ -80,7 +79,7 @@ class model_train():
         x_train, y_train = self.load_samples_test(datafiles='../data/train.txt')
         # word_index, reverse_word_index = word_index_word()
         # 截断和填充句子，使得等长，此处长句子保留句子后面的部分，短句子在前面填充
-        x_train = keras.preprocessing.sequence.pad_sequences(x_train, maxlen=self.model.sentence_length)
+        x_train = tf.keras.preprocessing.sequence.pad_sequences(x_train, maxlen=self.model.sentence_length)
         # x_test = keras.preprocessing.sequence.pad_sequences(x_test, maxlen=self.model.sentence_length)
         # 构建数据集，打散，批量，并丢掉最后一个不够batch_size的batch
         db_train = tf.data.Dataset.from_tensor_slices((x_train, y_train))
@@ -94,8 +93,8 @@ class model_train():
         # db_train, db_test = self.data_process()
         db_train = self.data_process()
         self.model.compile(
-            optimizer=keras.optimizers.Adam(self.lr),
-            loss=keras.losses.BinaryCrossentropy(),
+            optimizer=tf.keras.optimizers.Adam(self.lr),
+            loss=tf.keras.losses.BinaryCrossentropy(),
             metrics=['accuracy']
         )
         # self.model.fit(db_train, epochs=self.epochs, validation_data=db_test)
@@ -106,10 +105,10 @@ class model_train():
     def predict(self, input_text):
         # Make a prediction on all the batch
         inputs = self.convert_vector(input_text, self.model.sentence_length)
-        inputs = keras.layers.Reshape(inputs, [-1, 70])
+        inputs = tf.keras.layers.Reshape(inputs, [-1, 70])
         self.model.compile(
-            optimizer=keras.optimizers.Adam(self.lr),
-            loss=keras.losses.BinaryCrossentropy(),
+            optimizer=tf.keras.optimizers.Adam(self.lr),
+            loss=tf.keras.losses.BinaryCrossentropy(),
             metrics=['accuracy']
         )
         self.model.load_weights('lstm.ckpt')

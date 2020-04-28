@@ -6,11 +6,11 @@
 @git   : 
 @Software: PyCharm
 """
-from tensorflow import keras
+import tensorflow as tf
 import json
 
 
-class RNN(keras.Model):
+class RNN(tf.keras.Model):
 
     def __init__(self, units, vocab_file, trainable=True):
         """
@@ -31,25 +31,25 @@ class RNN(keras.Model):
         self.classes = 1
         super(RNN, self).__init__()
         # 词向量编码[b, 80 -> [b, 80, 100]
-        self.embedding = keras.layers.Embedding(
+        self.embedding = tf.keras.layers.Embedding(
             self.vocab_size, self.embedding_len,
             input_length=self.sentence_length
         )
 
         # 构建RNN
-        self.rnn = keras.Sequential([
-            keras.layers.LSTM(self.units, dropout=self.dropout, return_sequences=True),
-            keras.layers.LSTM(self.units, dropout=self.dropout, return_sequences=True),
-            keras.layers.LSTM(self.units, dropout=self.dropout),
+        self.rnn = tf.keras.Sequential([
+            tf.keras.layers.LSTM(self.units, dropout=self.dropout, return_sequences=True),
+            tf.keras.layers.LSTM(self.units, dropout=self.dropout, return_sequences=True),
+            tf.keras.layers.LSTM(self.units, dropout=self.dropout),
         ])
 
         # 构建分类网络 用于将cell的输出特征进行分类，2分类
         # [b, 80, 100] -> [b, 64] -> [b, 1]
-        self.outlayer = keras.Sequential([
-            keras.layers.Dense(self.units, activation='relu'),
-            keras.layers.Dropout(rate=self.dropout),
-            keras.layers.ReLU(),
-            keras.layers.Dense(self.classes),
+        self.outlayer = tf.keras.Sequential([
+            tf.keras.layers.Dense(self.units, activation='relu'),
+            tf.keras.layers.Dropout(rate=self.dropout),
+            tf.keras.layers.ReLU(),
+            tf.keras.layers.Dense(self.classes),
         ])
 
     def load_dict(self):
@@ -74,6 +74,6 @@ class RNN(keras.Model):
         # 末层最后一个输出作为分类网络的输入: [b, 64] => [b, 1]
         x = self.outlayer(x, training)
         # p(y is pos|x)
-        prob = keras.activations.sigmoid(x)
+        prob = tf.keras.activations.sigmoid(x)
         # prob = tf.nn.softmax(x)
         return prob

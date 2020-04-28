@@ -6,9 +6,9 @@
 @git   : 
 @Software: PyCharm
 """
-from tensorflow import keras
 import json
 import numpy as np
+import tensorflow as tf
 
 
 class CosineLayer():
@@ -16,19 +16,19 @@ class CosineLayer():
     def __call__(self, x1, x2):
         def _cosine(x):
             # 和x.dot(y.T)一样
-            dot1 = keras.backend.batch_dot(x[0], x[1], axes=1)
-            dot2 = keras.backend.batch_dot(x[0], x[0], axes=1)
-            dot3 = keras.backend.batch_dot(x[1], x[1], axes=1)
+            dot1 = tf.keras.backend.batch_dot(x[0], x[1], axes=1)
+            dot2 = tf.keras.backend.batch_dot(x[0], x[0], axes=1)
+            dot3 = tf.keras.backend.batch_dot(x[1], x[1], axes=1)
             # keras.backend.epsilon() == 1e-07
-            max_ = keras.backend.maximum(keras.backend.sqrt(dot2 * dot3), keras.backend.epsilon())
+            max_ = tf.keras.backend.maximum(tf.keras.backend.sqrt(dot2 * dot3), tf.keras.backend.epsilon())
             return dot1 / max_
 
         output_shape = (1,)
-        value = keras.layers.Lambda(_cosine, output_shape=output_shape)([x1, x2])
+        value = tf.keras.layers.Lambda(_cosine, output_shape=output_shape)([x1, x2])
         return value
 
 
-class Evaluate(keras.callbacks.Callback):
+class Evaluate(tf.keras.callbacks.Callback):
     def __init__(self):
         self.num_passed_batchs = 0
         self.warmup_epochs = 10
@@ -41,7 +41,7 @@ class Evaluate(keras.callbacks.Callback):
             self.steps_per_epoch = self.params['steps']
         if self.num_passed_batchs < self.steps_per_epoch * self.warmup_epochs:
             # 前10个epoch中，学习率线性地从零增加到0.001
-            keras.backend.set_value(self.model.optimizer.lr,
+            tf.keras.backend.set_value(self.model.optimizer.lr,
                         0.0001 * (self.num_passed_batchs + 1) / self.steps_per_epoch / self.warmup_epochs)
             self.num_passed_batchs += 1
 
@@ -70,31 +70,31 @@ class DssmModel:
                 i += 1
 
     def create_model(self):
-        left_input = keras.layers.Input(shape=(self.max_seq_length,), dtype='int32')
-        right_input = keras.layers.Input(shape=(self.max_seq_length,), dtype='int32')
-        shared_model = keras.models.Sequential()
-        shared_model.add(keras.layers.Embedding(self.vocab_size, self.embedding_dim, input_shape=(self.max_seq_length,),
+        left_input = tf.keras.layers.Input(shape=(self.max_seq_length,), dtype='int32')
+        right_input = tf.keras.layers.Input(shape=(self.max_seq_length,), dtype='int32')
+        shared_model = tf.keras.models.Sequential()
+        shared_model.add(tf.keras.layers.Embedding(self.vocab_size, self.embedding_dim, input_shape=(self.max_seq_length,),
                                                 trainable=True))
-        shared_model.add(keras.layers.Bidirectional(keras.layers.LSTM(self.n_hidden)))
-        shared_model.add(keras.layers.Dense(2))
+        shared_model.add(tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(self.n_hidden)))
+        shared_model.add(tf.keras.layers.Dense(2))
         a = CosineLayer()
         malstm_distance = a(shared_model(left_input), shared_model(right_input))
-        self.model = keras.models.Model(inputs=[left_input, right_input], outputs=[malstm_distance])
+        self.model = tf.keras.models.Model(inputs=[left_input, right_input], outputs=[malstm_distance])
 
         def scheduler(epoch):
             if epoch % 2 == 0 and epoch != 0:
-                lr = keras.backend.get_value(self.model.optimizer.lr)
-                keras.backend.set_value(self.model.optimizer.lr, lr * 0.9)
+                lr = tf.keras.backend.get_value(self.model.optimizer.lr)
+                tf.keras.backend.set_value(self.model.optimizer.lr, lr * 0.9)
                 print("lr changed to {}".format(lr * 0.9))
-            return keras.backend.get_value(self.model.optimizer.lr)
+            return tf.keras.backend.get_value(self.model.optimizer.lr)
 
         # 学习率衰减
-        self.reduce_lr = keras.callbacks.LearningRateScheduler(scheduler)
+        self.reduce_lr = tf.keras.callbacks.LearningRateScheduler(scheduler)
 
         if self.gpus >= 2:
             # 数据并行
-            self.model = keras.utils.multi_gpu_model(self.model, gpus=self.gpus)
-        self.model.compile(loss='binary_crossentropy', optimizer=keras.optimizers.Adam(lr=0.0001), metrics=['accuracy'])
+            self.model = tf.keras.utils.multi_gpu_model(self.model, gpus=self.gpus)
+        self.model.compile(loss='binary_crossentropy', optimizer=tf.keras.optimizers.Adam(lr=0.0001), metrics=['accuracy'])
         self.model.summary()
         shared_model.summary()
 
