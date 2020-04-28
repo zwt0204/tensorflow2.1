@@ -10,13 +10,14 @@ from DSSM.dssm_model import DssmModel
 import numpy as np
 import json
 import tensorflow as tf
+# print(tf.__version__)
 
 
 class Train:
 
     def __init__(self):
         self.model = DssmModel()
-        self.model_path = 'D:\mygit\\tf1.0\models\\DSSM.h5'
+        self.model_path = '../model/DSSM.h5'
 
     def convert_vector(self, input_text):
         char_vector = np.zeros((len(input_text)), dtype=np.float32)
