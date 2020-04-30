@@ -59,7 +59,7 @@ class Train:
                 x_test.append(temp)
 
         x = tf.keras.preprocessing.sequence.pad_sequences(x, maxlen=self.sequence)
-        self.model.train_test(n_epochs, x, y, x, y)
+        self.model.train_test(n_epochs, x, y, x_test, y_test)
         self.model.save(self.model_path)
 
         # score, acc = self.model.evaluate(x_test, y_test,
