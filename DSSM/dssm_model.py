@@ -19,7 +19,6 @@ class CosineLayer():
             dot1 = tf.keras.backend.batch_dot(x[0], x[1], axes=1)
             dot2 = tf.keras.backend.batch_dot(x[0], x[0], axes=1)
             dot3 = tf.keras.backend.batch_dot(x[1], x[1], axes=1)
-            # keras.backend.epsilon() == 1e-07
             max_ = tf.keras.backend.maximum(tf.keras.backend.sqrt(dot2 * dot3), tf.keras.backend.epsilon())
             return dot1 / max_
 

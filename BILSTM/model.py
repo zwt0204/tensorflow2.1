@@ -41,13 +41,21 @@ class bilstm():
         self.input = tf.keras.layers.Input(shape=(self.sequence,), dtype='int32')
 
     def create_model(self):
-
-        self.model = tf.keras.Sequential()
-        self.model.add(tf.keras.layers.Embedding(self.vocab_size, self.embedding_size, input_length=self.sequence))
-        self.model.add(tf.keras.layers.Dropout(self.dropout))
-        self.model.add(tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(self.unit)))
-        self.model.add(tf.keras.layers.Dropout(self.dropout))
-        self.model.add(tf.keras.layers.Dense(self.class_size, activation='softmax'))
+        x = tf.keras.layers.Embedding(self.vocab_size, self.embedding_size, input_length=self.sequence)(self.input)
+        # (None, 70, 256)
+        for i in range(2):
+            x = tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(self.unit, activation='relu', return_sequences=True,
+                                                                   kernel_regularizer=tf.keras.regularizers.l2(0.32 * 0.1),
+                                                                   recurrent_regularizer=tf.keras.regularizers.l2(0.32)
+                                                                   ))(x)
+            x = tf.keras.layers.Dropout(self.dropout)(x)
+        # (None, 70, 1024)
+        x = tf.keras.layers.Flatten()(x)
+        # (None, 71680)
+        dense_layer = tf.keras.layers.Dense(self.class_size, activation='softmax')(x)
+        output = [dense_layer]
+        self.model = tf.keras.models.Model(self.input, output)
+        self.model.summary()
 
         self.optimizer = tf.keras.optimizers.Adam(lr=self.learning_rate)
         self.model.compile(loss='sparse_categorical_crossentropy', optimizer=self.optimizer, metrics=['accuracy'])
@@ -61,9 +69,16 @@ class bilstm():
         self.model.fit(np.array(x), np.array(y), batch_size=self.batch_size, epochs=n_epoch,
                        callbacks=self.callbacks_list)
 
+    def train_test(self, n_epoch, x, y, x_test, y_test):
+        self.model.fit(np.array(x), np.array(y), batch_size=self.batch_size, epochs=n_epoch,
+                       validation_data=[np.array(x_test), np.array(y_test)])
+
     def predict(self, x, model_path):
         self.model.load_weights(model_path)
         return self.model.predict(x)
+
+    def evaluate(self, x_test, y_test, batch_size):
+        return self.model.evaluate(np.array(x_test), np.array(y_test), batch_size)
 
     def save(self, path):
         self.model.save_weights(path)

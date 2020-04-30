@@ -20,8 +20,8 @@ class Train:
         self.embedding_size = 256
         self.unit = 512
         self.batch_size = 256
-        self.dropout = 0.3
-        self.learning_rate = 0.001
+        self.dropout = 0.1
+        self.learning_rate = 0.0001
         self.vocab_file = 'D:\mygit\\tf1.0\data\肯定否定\dictionary.json'
         self.char_index = {' ': 0}
         self.sequence = 70
@@ -59,8 +59,12 @@ class Train:
                 x_test.append(temp)
 
         x = tf.keras.preprocessing.sequence.pad_sequences(x, maxlen=self.sequence)
-        self.model.train(n_epochs, x, y)
+        self.model.train_test(n_epochs, x, y, x_test, y_test)
         self.model.save(self.model_path)
+
+        score, acc = self.model.evaluate(x_test, y_test,
+                                    batch_size=self.batch_size)
+        print('score:%s, acc:%s' % (score, acc))
 
     def predict(self, x):
         x_test = []
@@ -78,5 +82,5 @@ class Train:
 
 
 if __name__ == '__main__':
-    Train().train(30)
+    Train().train(20)
     # Train().predict('如何重塑老城？嘉兴市委书记为何去了这四个地方调研')
