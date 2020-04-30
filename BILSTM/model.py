@@ -43,7 +43,7 @@ class bilstm():
     def create_model(self):
         x = tf.keras.layers.Embedding(self.vocab_size, self.embedding_size, input_length=self.sequence)(self.input)
         # (None, 70, 256)
-        for i in range(2):
+        for i in range(3):
             x = tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(self.unit, activation='relu', return_sequences=True,
                                                                    kernel_regularizer=tf.keras.regularizers.l2(0.32 * 0.1),
                                                                    recurrent_regularizer=tf.keras.regularizers.l2(0.32)

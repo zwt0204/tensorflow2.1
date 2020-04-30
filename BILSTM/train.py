@@ -21,11 +21,11 @@ class Train:
         self.unit = 512
         self.batch_size = 256
         self.dropout = 0.1
-        self.learning_rate = 0.0001
+        self.learning_rate = 0.001
         self.vocab_file = 'D:\mygit\\tf1.0\data\肯定否定\dictionary.json'
         self.char_index = {' ': 0}
         self.sequence = 70
-        self.class_size = 15
+        self.class_size = 28
         self.model = bilstm(self.embedding_size, self.unit, self.batch_size, self.dropout, self.learning_rate,
                             self.vocab_file, self.sequence, self.class_size)
 
@@ -59,12 +59,12 @@ class Train:
                 x_test.append(temp)
 
         x = tf.keras.preprocessing.sequence.pad_sequences(x, maxlen=self.sequence)
-        self.model.train_test(n_epochs, x, y, x_test, y_test)
+        self.model.train_test(n_epochs, x, y, x, y)
         self.model.save(self.model_path)
 
-        score, acc = self.model.evaluate(x_test, y_test,
-                                    batch_size=self.batch_size)
-        print('score:%s, acc:%s' % (score, acc))
+        # score, acc = self.model.evaluate(x_test, y_test,
+        #                             batch_size=self.batch_size)
+        # print('score:%s, acc:%s' % (score, acc)
 
     def predict(self, x):
         x_test = []
