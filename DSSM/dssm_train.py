@@ -36,7 +36,7 @@ class Train:
                 data = json.loads(line)
                 temp = self.convert_vector(data['question'].strip())
                 temp_1 = self.convert_vector(data['similar'].strip())
-                label.append(int(data['label']))
+                label.append(float(data['label']))
                 left.append(temp)
                 right.append(temp_1)
         x_left = tf.keras.preprocessing.sequence.pad_sequences(left, maxlen=self.model.max_seq_length)

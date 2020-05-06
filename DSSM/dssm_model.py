@@ -9,6 +9,9 @@
 import json
 import numpy as np
 import tensorflow as tf
+"""
+不是原始的dssm，目前版本跟孪生网络基本没有区别
+"""
 
 
 class CosineLayer():
@@ -68,6 +71,16 @@ class DssmModel:
                 self.char_index[charvalue.strip()] = i + 1
                 i += 1
 
+    # 孪生网络用对比损失
+    def contrastive_loss(self, Ew, y):
+        # tf.square对其中的每个元素求平方
+        # 1 - Ew 余弦距离
+        l_1 = y * 0.25 * tf.square(1 - Ew)
+        # 相当于margin为1
+        l_0 = (1 - y) * tf.square(tf.maximum(Ew, 0))
+        loss = tf.reduce_sum(l_1 + l_0)
+        return loss
+
     def create_model(self):
         left_input = tf.keras.layers.Input(shape=(self.max_seq_length,), dtype='int32')
         right_input = tf.keras.layers.Input(shape=(self.max_seq_length,), dtype='int32')
@@ -93,7 +106,14 @@ class DssmModel:
         if self.gpus >= 2:
             # 数据并行
             self.model = tf.keras.utils.multi_gpu_model(self.model, gpus=self.gpus)
-        self.model.compile(loss='binary_crossentropy', optimizer=tf.keras.optimizers.Adam(lr=0.0001), metrics=['accuracy'])
+        # dssm
+        # self.model.compile(loss='binary_crossentropy', optimizer=tf.keras.optimizers.Adam(lr=0.0001), metrics=['accuracy'])
+        # 孪生网络
+        self.model.compile(loss=self.contrastive_loss, optimizer=tf.keras.optimizers.Adam(lr=0.0001), metrics=['accuracy'])
+        from utils.radam import RAdam
+        from utils.lookhead import Lookahead
+        # from utils.lamb import LAMB
+        # self.model.compile(loss=self.contrastive_loss, optimizer=LAMB(lr=0.0001), metrics=['accuracy'])
         self.model.summary()
         shared_model.summary()
 
