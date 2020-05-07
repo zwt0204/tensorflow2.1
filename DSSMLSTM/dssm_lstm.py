@@ -131,16 +131,15 @@ class DSSMLSTMMODEL:
 
     # 有预训练向量
     def get_embedding_weight(self, weight_path, word_index):
-        # embedding_weight = np.random.rand('word_num', 'embedding_dim')
         embedding_weight = np.random.uniform(-0.05, 0.05, size=['word_num', 'embedding_dim'])
         cnt = 0
         with open(weight_path, 'r') as f:
             for line in f:
                 values = line.split()
                 word = values[0]
-                if word in word_index.keys() and word_index[word] < 'word_num':
+                if word in word_index.keys():
                     weight = np.asarray(values[1:], dtype='float32')
-                    embedding_weight[word_index[word] + 3] = weight
+                    embedding_weight[word_index[word]] = weight
                     cnt += 1
         print('word num: {}, matched num: {}'.format(len(word_index), cnt))
         return embedding_weight
