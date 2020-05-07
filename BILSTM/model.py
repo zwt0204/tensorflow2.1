@@ -48,7 +48,8 @@ class bilstm():
                                                                    kernel_regularizer=tf.keras.regularizers.l2(0.32 * 0.1),
                                                                    recurrent_regularizer=tf.keras.regularizers.l2(0.32)
                                                                    ))(x)
-            x = tf.keras.layers.Dropout(self.dropout)(x)
+
+        x = tf.keras.layers.Dropout(self.dropout)(x)
         # (None, 70, 1024)
         x = tf.keras.layers.Flatten()(x)
         # (None, 71680)

@@ -6,7 +6,7 @@
 @git   : 
 @Software: PyCharm
 """
-from model import bilstm
+from BILSTM.model import bilstm
 import numpy as np
 import json
 import tensorflow as tf
@@ -19,7 +19,7 @@ class Train:
         self.model_path = 'D:\mygit\\tensorflow2.1\model\\bilstm\\bilstm.h5'
         self.embedding_size = 256
         self.unit = 512
-        self.batch_size = 256
+        self.batch_size = 128
         self.dropout = 0.1
         self.learning_rate = 0.001
         self.vocab_file = 'D:\mygit\\tf1.0\data\肯定否定\dictionary.json'
