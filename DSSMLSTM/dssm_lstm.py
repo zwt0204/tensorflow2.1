@@ -41,7 +41,8 @@ class Evaluate(tf.keras.callbacks.Callback):
         if self.num_passed_batchs < self.steps_per_epoch * self.warmup_epochs:
             # 前10个epoch中，学习率线性地从零增加到0.001
             tf.keras.backend.set_value(self.model.optimizer.lr,
-                        0.0001 * (self.num_passed_batchs + 1) / self.steps_per_epoch / self.warmup_epochs)
+                                       0.0001 * (
+                                                   self.num_passed_batchs + 1) / self.steps_per_epoch / self.warmup_epochs)
             self.num_passed_batchs += 1
 
 
@@ -82,8 +83,9 @@ class DSSMLSTMMODEL:
         left_input = tf.keras.layers.Input(shape=(self.max_seq_length,), dtype='int32')
         right_input = tf.keras.layers.Input(shape=(self.max_seq_length,), dtype='int32')
         shared_model = tf.keras.models.Sequential()
-        shared_model.add(tf.keras.layers.Embedding(self.vocab_size, self.embedding_dim, input_shape=(self.max_seq_length,),
-                                                trainable=True))
+        shared_model.add(
+            tf.keras.layers.Embedding(self.vocab_size, self.embedding_dim, input_shape=(self.max_seq_length,),
+                                      trainable=True))
 
         peephole_lstm_cells = [tf.keras.experimental.PeepholeLSTMCell(size) for size in [self.n_hidden, self.n_hidden]]
 
@@ -106,10 +108,8 @@ class DSSMLSTMMODEL:
         if self.gpus >= 2:
             # 数据并行
             self.model = tf.keras.utils.multi_gpu_model(self.model, gpus=self.gpus)
-        # dssm
-        self.model.compile(loss='binary_crossentropy', optimizer=tf.keras.optimizers.Adam(lr=0.0001), metrics=['accuracy'])
-        # 孪生网络
-        # self.model.compile(loss=self.contrastive_loss, optimizer=tf.keras.optimizers.Adam(lr=0.0001), metrics=['accuracy'])
+        self.model.compile(loss='binary_crossentropy', optimizer=tf.keras.optimizers.Adam(lr=0.0001),
+                           metrics=['accuracy'])
         from utils.radam import RAdam
         from utils.lookhead import Lookahead
         # from utils.lamb import LAMB
